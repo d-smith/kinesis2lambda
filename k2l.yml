@@ -2,6 +2,13 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: >
   Deploy a stream and a labmda function to read from the stream.
 
+Parameters:
+  CodeBucketName:
+    Type: String
+    Description: Bucket containing lambda code zip file
+  ZipFileName:
+    Type: String
+    Default: kreader.zip
 
 Resources:
   MyStream:
@@ -15,6 +22,16 @@ Resources:
           Key: Environment
           Value: Production
 
+  QueueDrainer:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: "drainer.lambda_handler"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+          S3Bucket: !Ref CodeBucketName
+          S3Key: !Ref ZipFileName
+      Runtime: "python2.7"
+      Timeout: 60
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
