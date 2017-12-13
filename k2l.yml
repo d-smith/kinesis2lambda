@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Deploy a stream and a labmda function to read from the stream.
+
+
+Resources:
+  MyStream:
+    Type: 'AWS::Kinesis::Stream'
+    Properties:
+      Name: MyKinesisStream
+      RetentionPeriodHours: 24
+      ShardCount: 1
+      Tags:
+        -
+          Key: Environment
+          Value: Production
+
