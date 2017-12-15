@@ -25,7 +25,7 @@ Resources:
   QueueDrainer:
     Type: "AWS::Lambda::Function"
     Properties:
-      Handler: "drainer.lambda_handler"
+      Handler: "kreader.lambda_handler"
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
           S3Bucket: !Ref CodeBucketName
