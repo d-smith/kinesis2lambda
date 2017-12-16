@@ -29,18 +29,22 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
       Handler: "kreader.lambda_handler"
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Role: !GetAtt KinesisReaderExecutionRole.Arn
       Code:
           S3Bucket: !Ref CodeBucketName
           S3Key: !Ref ZipFileName
       Runtime: "python2.7"
       Timeout: 60
+      Environment:
+        Variables:
+          EVENT_LAMBDA_NAME: !Ref EventProcessor
+
 
   EventProcessor:
     Type: "AWS::Lambda::Function"
     Properties:
       Handler: "processEvent.event_handler"
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Role: !GetAtt EventProcessorExecutionRole.Arn
       Code:
           S3Bucket: !Ref CodeBucketName
           S3Key: !Ref EventZipFileName
@@ -69,7 +73,40 @@ Resources:
           - "Arn"
       StartingPosition: "TRIM_HORIZON"
 
-  LambdaExecutionRole:
+  EventProcessorExecutionRole:
+    Type: AWS::IAM::Role
+    DependsOn: MyStream
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+            - edgelambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: logs
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:*
+            Resource: arn:aws:logs:*:*:*
+      - PolicyName: metrics
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - cloudwatch:PutMetricData
+            Resource: '*'
+
+  KinesisReaderExecutionRole:
     Type: AWS::IAM::Role
     DependsOn: MyStream
     Properties:
